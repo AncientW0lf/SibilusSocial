@@ -21,7 +21,12 @@ namespace Sibilus.Web
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
+
+#if DEBUG
+                    webBuilder.UseUrls("http://*:8080");
+#else
                     webBuilder.UseUrls("http://*:80", "https://*:443");
+#endif
                 });
     }
 }
