@@ -40,7 +40,9 @@ namespace Sibilus.Web
                 app.UseHsts();
             }
 
+#if DEBUG
             app.UseHttpsRedirection();
+#endif
             app.UseStaticFiles();
 
             app.UseRouting();
