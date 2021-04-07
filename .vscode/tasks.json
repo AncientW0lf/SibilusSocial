@@ -7,11 +7,18 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/Sibilus.Web/Sibilus.Web.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
-            "problemMatcher": "$msCompile"
+            "problemMatcher": "$msCompile",
+            "presentation": {
+                "echo": false,
+                "reveal": "silent",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": false
+            }
         },
         {
             "label": "publish",
