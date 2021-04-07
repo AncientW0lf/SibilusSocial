@@ -12,7 +12,7 @@
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceFolder}/Sibilus.Web/bin/Debug/net5.0/Sibilus.Web.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/debug",
+            "cwd": "${workspaceFolder}/Sibilus.Web",
             "stopAtEntry": false,
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
