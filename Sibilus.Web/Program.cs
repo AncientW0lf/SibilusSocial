@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Sibilus.Web.Server;
 
 namespace Sibilus.Web
 {
@@ -13,6 +14,9 @@ namespace Sibilus.Web
     {
         public static void Main(string[] args)
         {
+            AppDomain.CurrentDomain.UnhandledException += (_, _) => ExitApplication();
+            AppDomain.CurrentDomain.ProcessExit += (_, _) => ExitApplication();
+
             CreateHostBuilder(args).Build().Run();
         }
 
@@ -28,5 +32,10 @@ namespace Sibilus.Web
                     webBuilder.UseUrls("http://*:80", "https://*:443");
 #endif
                 });
+
+        private static void ExitApplication()
+        {
+            DbCache.DbClient?.Dispose();
+        }
     }
 }
