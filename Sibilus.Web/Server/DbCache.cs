@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System;
 using Sibilus.Database;
+using System.Threading.Tasks;
 
 namespace Sibilus.Web.Server
 {
@@ -8,7 +9,18 @@ namespace Sibilus.Web.Server
     {
         public const string Filename = "server.db";
 
-        public static DatabaseClient DbClient = new DatabaseClient(Filename);
+        private static DatabaseClient _dbClient;
+
+        public static DatabaseClient DbClient
+        {
+            get
+            {
+                if (_dbClient == null)
+                    InitializeDb().GetAwaiter().GetResult();
+
+                return _dbClient;
+            }
+        }
 
         public static readonly IReadOnlyDictionary<string, DbColumn[]> DbTables = new Dictionary<string, DbColumn[]>
         {
@@ -24,7 +36,7 @@ namespace Sibilus.Web.Server
             },
             //TODO: Multiple primary keys need a separate syntax
             {
-                "reactions", new[]
+                "postreactions", new[]
                 {
                     new DbColumn("reaction", DbDatatype.TEXT, true, false),
                     new DbColumn("byUserId", DbDatatype.INT, (-1).ToString(), true, false),
@@ -44,5 +56,20 @@ namespace Sibilus.Web.Server
                 }
             }
         };
+
+        private static async Task InitializeDb()
+        {
+            if (_dbClient != null)
+                return;
+
+            _dbClient = new DatabaseClient(Filename);
+
+            if (!await _dbClient.TestConnectionAsync())
+                throw new Exception("Could not connect to the database.");
+
+            foreach (var table in DbTables)
+                if (!await _dbClient.TableExistsAsync(table.Key))
+                    await _dbClient.CreateTableAsync(table.Key, table.Value);
+        }
     }
 }
