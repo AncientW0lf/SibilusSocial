@@ -33,6 +33,10 @@ namespace Sibilus.Database
             CanBeNull = canBeNull;
         }
 
+        /// <summary>
+        /// Converts this object to its string representation used in database table creation.
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             string primarystr = IsPrimary ? " PRIMARY KEY" : string.Empty;
