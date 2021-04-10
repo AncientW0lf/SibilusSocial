@@ -1,3 +1,4 @@
+using System.Timers;
 using System.Collections.Generic;
 using System;
 using Sibilus.Database;
@@ -9,14 +10,14 @@ namespace Sibilus.Web.Server
     {
         public const string Filename = "server.db";
 
-        public static readonly IReadOnlyDictionary<string, DbColumn[]> DbTables = new Dictionary<string, DbColumn[]>
+        internal static readonly IReadOnlyDictionary<string, DbColumn[]> DbTables = new Dictionary<string, DbColumn[]>
         {
             {
                 "posts", new[]
                 {
                     new DbColumn("id", DbDatatype.INT, true, false),
                     new DbColumn("content", DbDatatype.TEXT, "[EMPTY POST]", false, false),
-                    new DbColumn("authorId", DbDatatype.INT, (-1).ToString(), false, false),
+                    new DbColumn("userId", DbDatatype.INT, (-1).ToString(), false, false),
                     new DbColumn("createdAt", DbDatatype.INT, 0.ToString(), false, false),
                     new DbColumn("tags", DbDatatype.TEXT, false)
                 }
@@ -40,10 +41,26 @@ namespace Sibilus.Web.Server
                     new DbColumn("bio", DbDatatype.TEXT, "No information given."),
                     new DbColumn("createdAt", DbDatatype.INT, 0.ToString(), false, false)
                 }
+            },
+            {
+                "sessions", new[]
+                {
+                    new DbColumn("id", DbDatatype.TEXT, true, false),
+                    new DbColumn("userId", DbDatatype.INT, (-1).ToString(), false, false),
+                    new DbColumn("expires", DbDatatype.INT, 0.ToString())
+                }
             }
         };
 
         public static DatabaseClient DbClient = InitializeDb().GetAwaiter().GetResult();
+
+        internal static readonly Timer SessionClearer = new Timer
+        {
+            AutoReset = true,
+            Interval = TimeSpan.FromMinutes(5).TotalMilliseconds
+        };
+
+        private static readonly TimeSpan SessionLifespan = TimeSpan.FromDays(7);
 
         private static async Task<DatabaseClient> InitializeDb()
         {
@@ -56,7 +73,18 @@ namespace Sibilus.Web.Server
                 if (!await client.TableExistsAsync(table.Key))
                     await client.CreateTableAsync(table.Key, table.Value);
 
+            SessionClearer.Elapsed += async (_, _) => await ClearExpiredSessions();
+            SessionClearer.Start();
+
             return client;
+        }
+
+        private static async Task ClearExpiredSessions()
+        {
+            int deleted = await DbClient.DeleteAsync("sessions", $"(expires + {SessionLifespan.Ticks}) < {DateTime.UtcNow.Ticks}");
+
+            if (deleted > 0)
+                Console.WriteLine($"Deleted {deleted} expired sessions");
         }
     }
 }
