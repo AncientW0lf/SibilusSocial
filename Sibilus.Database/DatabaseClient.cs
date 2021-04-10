@@ -74,6 +74,13 @@ namespace Sibilus.Database
             return await command.ExecuteScalarAsync() != null;
         }
 
+        public async Task<bool> ValueExistsAsync(string table, string column, string value)
+        {
+            var command = new SqliteCommand($"SELECT {column} FROM {table} WHERE {column}='{value}'", _connection);
+
+            return await command.ExecuteScalarAsync() != null;
+        }
+
         /// <summary>
         /// Writes new values into a database table.
         /// </summary>
@@ -130,6 +137,17 @@ namespace Sibilus.Database
                 reader.GetValues(row);
                 yield return row;
             }
+        }
+
+        public async Task<int> DeleteAsync(string table, params string[] conditions)
+        {
+            string conditionString = conditions != null && conditions.Length > 0
+                ? $"where {string.Join(" and ", conditions)}"
+                : "";
+
+            var command = new SqliteCommand($"delete from {table} {conditionString}".Trim(), _connection);
+
+            return await command.ExecuteNonQueryAsync();
         }
 
         /// <summary>
