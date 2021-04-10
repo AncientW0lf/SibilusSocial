@@ -36,6 +36,7 @@ namespace Sibilus.Web
         private static void ExitApplication()
         {
             DbCache.DbClient?.Dispose();
+            DbCache.SessionClearer?.Dispose();
         }
     }
 }
