@@ -36,10 +36,17 @@ namespace Sibilus.Database
         /// <summary>
         /// Converts this object to its string representation used in database table creation.
         /// </summary>
-        /// <returns></returns>
         public override string ToString()
         {
-            string primarystr = IsPrimary ? " PRIMARY KEY" : string.Empty;
+            return ToString(false);
+        }
+
+        /// <summary>
+        /// Converts this object to its string representation used in database table creation.
+        /// </summary>
+        public string ToString(bool noPrimary)
+        {
+            string primarystr = IsPrimary && !noPrimary ? " PRIMARY KEY" : string.Empty;
             string nullstr = CanBeNull ? string.Empty : " NOT NULL";
             string defaultstr = DefaultValue != null ? $" DEFAULT('{DefaultValue}')" : string.Empty;
 
