@@ -42,9 +42,22 @@ namespace Sibilus.Database
         /// <param name="columns">All column infos for the new table.</param>
         public async Task CreateTableAsync(string table, params DbColumn[] columns)
         {
-            var command = new SqliteCommand(
-                $"create table {table}({string.Join(',', columns)})",
-                _connection);
+            SqliteCommand command;
+            if (columns.Count(col => col.IsPrimary) > 1)
+            {
+                IEnumerable<string> primaries = columns.Where(a => a.IsPrimary).Select(b => b.Name);
+                IEnumerable<string> definitions = columns.Select(c => c.ToString(true));
+
+                command = new SqliteCommand(
+                    $"create table {table}({string.Join(',', definitions)}, PRIMARY KEY({string.Join(',', primaries)}))",
+                    _connection);
+            }
+            else
+            {
+                command = new SqliteCommand(
+                    $"create table {table}({string.Join(',', columns)})",
+                    _connection);
+            }
 
             await command.ExecuteNonQueryAsync();
         }
