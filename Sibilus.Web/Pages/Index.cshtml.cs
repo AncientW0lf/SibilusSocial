@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using Sibilus.Web.Server;
 
 namespace Sibilus.Web.Pages
 {
@@ -17,9 +18,12 @@ namespace Sibilus.Web.Pages
             _logger = logger;
         }
 
-        public void OnGet()
+        public async void OnGet()
         {
+            string sessionId = Request.Cookies["session"];
 
+            if (string.IsNullOrWhiteSpace(sessionId) || !await DbCache.DbClient.ValueExistsAsync("sessions", "id", sessionId))
+                Response.Redirect("/login");
         }
     }
 }
