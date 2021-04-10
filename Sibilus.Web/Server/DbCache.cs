@@ -9,19 +9,6 @@ namespace Sibilus.Web.Server
     {
         public const string Filename = "server.db";
 
-        private static DatabaseClient _dbClient;
-
-        public static DatabaseClient DbClient
-        {
-            get
-            {
-                if (_dbClient == null)
-                    InitializeDb().GetAwaiter().GetResult();
-
-                return _dbClient;
-            }
-        }
-
         public static readonly IReadOnlyDictionary<string, DbColumn[]> DbTables = new Dictionary<string, DbColumn[]>
         {
             {
@@ -34,7 +21,6 @@ namespace Sibilus.Web.Server
                     new DbColumn("tags", DbDatatype.TEXT, false)
                 }
             },
-            //TODO: Multiple primary keys need a separate syntax
             {
                 "postreactions", new[]
                 {
@@ -57,19 +43,20 @@ namespace Sibilus.Web.Server
             }
         };
 
-        private static async Task InitializeDb()
+        public static DatabaseClient DbClient = InitializeDb().GetAwaiter().GetResult();
+
+        private static async Task<DatabaseClient> InitializeDb()
         {
-            if (_dbClient != null)
-                return;
+            var client = new DatabaseClient(Filename);
 
-            _dbClient = new DatabaseClient(Filename);
-
-            if (!await _dbClient.TestConnectionAsync())
+            if (!await client.TestConnectionAsync())
                 throw new Exception("Could not connect to the database.");
 
             foreach (var table in DbTables)
-                if (!await _dbClient.TableExistsAsync(table.Key))
-                    await _dbClient.CreateTableAsync(table.Key, table.Value);
+                if (!await client.TableExistsAsync(table.Key))
+                    await client.CreateTableAsync(table.Key, table.Value);
+
+            return client;
         }
     }
 }
