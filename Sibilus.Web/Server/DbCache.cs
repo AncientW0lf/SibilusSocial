@@ -52,13 +52,13 @@ namespace Sibilus.Web.Server
             }
         };
 
-        public static DatabaseClient DbClient = InitializeDb().GetAwaiter().GetResult();
-
         internal static readonly Timer SessionClearer = new Timer
         {
             AutoReset = true,
             Interval = TimeSpan.FromMinutes(5).TotalMilliseconds
         };
+
+        public static DatabaseClient DbClient = InitializeDb().GetAwaiter().GetResult();
 
         private static readonly TimeSpan SessionLifespan = TimeSpan.FromDays(7);
 
